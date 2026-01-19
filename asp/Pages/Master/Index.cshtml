@@ -1,0 +1,24 @@
+@page
+@model asp.Pages.Master.IndexModel
+@{
+    ViewData["Title"] = "Dashboard Мастера";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Добро пожаловать, Мастер!</h1>
+        <a href="/RoleSelection" class="btn btn-secondary">← Назад к выбору роли</a>
+    </div>
+    <p>Здесь вы можете управлять назначенными заказами.</p>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Мои заказы</h5>
+                    <p class="card-text">Просмотр и управление назначенными заказами</p>
+                    <a href="/Master/Orders" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

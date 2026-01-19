@@ -1,0 +1,14 @@
+@page
+@model asp.Pages.Client.IndexModel
+@{
+    ViewData["Title"] = "Dashboard Клиента";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Добро пожаловать, Клиент!</h1>
+        <a href="/RoleSelection" class="btn btn-secondary">← Назад к выбору роли</a>
+    </div>
+    <p>Здесь вы можете управлять своими заказами.</p>
+    <a href="/Client/Orders" class="btn btn-primary">Мои заказы</a>
+</div>

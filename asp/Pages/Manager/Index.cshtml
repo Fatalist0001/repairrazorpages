@@ -1,0 +1,42 @@
+@page
+@model asp.Pages.Manager.IndexModel
+@{
+    ViewData["Title"] = "Dashboard Менеджера";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Добро пожаловать, Менеджер!</h1>
+        <a href="/RoleSelection" class="btn btn-secondary">← Назад к выбору роли</a>
+    </div>
+    <p>Здесь вы можете управлять заказами и клиентами.</p>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Список заказов</h5>
+                    <p class="card-text">Просмотр и управление заказами</p>
+                    <a href="/Manager/Orders" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Управление клиентами</h5>
+                    <p class="card-text">Добавление и редактирование клиентов</p>
+                    <a href="/Manager/Clients" class="btn btn-secondary">Перейти</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Лог активности</h5>
+                    <p class="card-text">Просмотр истории действий</p>
+                    <a href="/ActivityLog" class="btn btn-info">Перейти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

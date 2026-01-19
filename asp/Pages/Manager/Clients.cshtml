@@ -1,0 +1,101 @@
+@page
+@model asp.Pages.Manager.ClientsModel
+@{
+    ViewData["Title"] = "Управление клиентами";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Управление клиентами</h1>
+        <a href="/Manager/Index" class="btn btn-secondary">← Назад</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <a href="/Manager/CreateClient" class="btn btn-primary mb-3">Добавить клиента</a>
+
+    @if (Model.Clients != null && Model.Clients.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Телефон</th>
+                    <th>Адрес</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var client in Model.Clients)
+                {
+                    <tr>
+                        <td>@client.Id</td>
+                        <td>@client.Name</td>
+                        <td>@client.Email</td>
+                        <td>@client.Phone</td>
+                        <td>@client.Address</td>
+                        <td>
+                            <a href="/Manager/EditClient/@client.Id" class="btn btn-sm btn-warning">Редактировать</a>
+                            <button type="button" class="btn btn-sm btn-danger ms-1"
+                                    onclick="deleteClient(@client.Id, '@client.Name')"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                Удалить
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Клиенты не найдены.</p>
+    }
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы действительно хотите удалить клиента <strong id="clientName"></strong>?</p>
+                    <p class="text-danger">Это действие нельзя отменить!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteClient(clientId, clientName) {
+            document.getElementById('clientName').textContent = clientName;
+            document.getElementById('deleteForm').action = `/Manager/Clients?handler=Delete&id=${clientId}`;
+        }
+    </script>
+}

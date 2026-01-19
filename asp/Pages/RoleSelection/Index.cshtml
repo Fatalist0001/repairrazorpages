@@ -1,0 +1,33 @@
+@page
+@model asp.Pages.RoleSelection.IndexModel
+@{
+    ViewData["Title"] = "Выбор роли";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>Мастерская по ремонту компьютеров</h2>
+                    <p>Выберите вашу роль для входа в систему</p>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="d-grid gap-3">
+                            <button type="submit" name="role" value="Client" class="btn btn-primary btn-lg">
+                                Войти как Клиент
+                            </button>
+                            <button type="submit" name="role" value="Manager" class="btn btn-success btn-lg">
+                                Войти как Менеджер
+                            </button>
+                            <button type="submit" name="role" value="Master" class="btn btn-warning btn-lg">
+                                Войти как Мастер
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

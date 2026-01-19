@@ -1,0 +1,66 @@
+@page
+@model asp.Pages.Manager.CreateClientModel
+@{
+    ViewData["Title"] = "Добавить клиента";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Добавить клиента</h1>
+        <a href="/Manager/Clients" class="btn btn-secondary">← Назад к клиентам</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">ФИО:</label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   placeholder="Иванов Иван Иванович" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   placeholder="ivan@example.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Телефон:</label>
+                            <input type="tel" class="form-control" id="phone" name="phone"
+                                   placeholder="+7 (999) 123-45-67" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Адрес (необязательно):</label>
+                            <textarea class="form-control" id="address" name="address" rows="2"
+                                      placeholder="г. Москва, ул. Ленина, д. 1"></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Добавить клиента</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

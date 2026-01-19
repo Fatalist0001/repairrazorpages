@@ -1,0 +1,123 @@
+@page
+@model asp.Pages.ActivityLog.IndexModel
+@{
+    ViewData["Title"] = "Лог активности";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Лог активности системы</h1>
+        <a href="/Manager/Orders" class="btn btn-secondary">← Назад к заказам</a>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="orderFilter" class="form-label">Фильтр по заказу:</label>
+            <input type="number" class="form-control" id="orderFilter" placeholder="ID заказа">
+        </div>
+        <div class="col-md-3">
+            <label for="dateFilter" class="form-label">Фильтр по дате:</label>
+            <input type="date" class="form-control" id="dateFilter">
+        </div>
+        <div class="col-md-3">
+            <label for="employeeFilter" class="form-label">Фильтр по сотруднику:</label>
+            <input type="number" class="form-control" id="employeeFilter" placeholder="ID сотрудника">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="button" class="btn btn-primary me-2" onclick="applyFilters()">Применить</button>
+            <button type="button" class="btn btn-secondary" onclick="clearFilters()">Очистить</button>
+        </div>
+    </div>
+
+    <!-- Таблица логов -->
+    <div class="table-responsive">
+        <table class="table table-striped" id="activityLogTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Заказ</th>
+                    <th>Сотрудник</th>
+                    <th>Действие</th>
+                    <th>Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.ActivityLogs)
+                {
+                    <tr data-order="@log.OrderId" data-employee="@log.EmployeeId" data-date="@log.Timestamp.ToString("yyyy-MM-dd")">
+                        <td>@log.Id</td>
+                        <td>
+                            @if (log.Order != null)
+                            {
+                                <a href="/Manager/OrderDetails/@log.OrderId">Заказ №@log.OrderId</a>
+                            }
+                            else
+                            {
+                                <span>Заказ №@log.OrderId</span>
+                            }
+                        </td>
+                        <td>
+                            @if (log.EmployeeId.HasValue)
+                            {
+                                <span>Сотрудник @log.EmployeeId</span>
+                            }
+                            else
+                            {
+                                <span>Система</span>
+                            }
+                        </td>
+                        <td>@log.Action</td>
+                        <td>@log.Timestamp.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.ActivityLogs.Any())
+    {
+        <div class="alert alert-info mt-3">
+            Лог активности пуст.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function applyFilters() {
+            const orderId = document.getElementById('orderFilter').value;
+            const date = document.getElementById('dateFilter').value;
+            const employeeId = document.getElementById('employeeFilter').value;
+
+            const rows = document.querySelectorAll('#activityLogTable tbody tr');
+
+            rows.forEach(row => {
+                let show = true;
+
+                if (orderId && row.getAttribute('data-order') !== orderId) {
+                    show = false;
+                }
+
+                if (date && row.getAttribute('data-date') !== date) {
+                    show = false;
+                }
+
+                if (employeeId && row.getAttribute('data-employee') !== employeeId) {
+                    show = false;
+                }
+
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('orderFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            document.getElementById('employeeFilter').value = '';
+
+            const rows = document.querySelectorAll('#activityLogTable tbody tr');
+            rows.forEach(row => row.style.display = '');
+        }
+    </script>
+}

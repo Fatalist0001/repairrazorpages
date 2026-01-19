@@ -1,0 +1,76 @@
+@page
+@model asp.Pages.Manager.OrdersModel
+@{
+    ViewData["Title"] = "Список заказов";
+}
+
+<div class="container mt-4">
+    <h1>Список заказов</h1>
+
+    <div class="mb-3">
+        <a href="/Manager/CreateOrder" class="btn btn-primary">Создать заказ</a>
+        <a href="/Manager/Clients" class="btn btn-secondary">Управление клиентами</a>
+    </div>
+
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Статус</label>
+                <select class="form-control" id="status" name="status">
+                    <option value="">Все</option>
+                    <option value="в обработке">В обработке</option>
+                    <option value="диагностика">Диагностика</option>
+                    <option value="ремонт">Ремонт</option>
+                    <option value="Ожидает подтверждения клиента">Ожидает подтверждения клиента</option>
+                    <option value="отменён">Отменён</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="client" class="form-label">Клиент</label>
+                <input type="text" class="form-control" id="client" name="client" value="@Model.ClientFilter" placeholder="Имя клиента" />
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Фильтровать</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Orders != null && Model.Orders.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Клиент</th>
+                    <th>Устройство</th>
+                    <th>Статус</th>
+                    <th>Мастер</th>
+                    <th>Дата создания</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Orders)
+                {
+                    <tr>
+                        <td>@order.Id</td>
+                        <td>@order.Client?.Name</td>
+                        <td>@(order.DeviceType ?? "null") @(order.DeviceModel ?? "null")</td>
+                        <td>@order.Status</td>
+                        <td>@order.Master?.Name</td>
+                        <td>@order.CreatedAt.ToShortDateString()</td>
+                        <td>
+                            <a href="/Manager/OrderDetails/@order.Id" class="btn btn-sm btn-info">Открыть</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Заказы не найдены.</p>
+    }
+
+    <a href="/Manager/Index" class="btn btn-secondary mt-3">Назад</a>
+</div>

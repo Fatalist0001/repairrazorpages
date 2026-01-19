@@ -1,0 +1,43 @@
+@page
+@model asp.Pages.Manager.CreateOrderModel
+@{
+    ViewData["Title"] = "Создание заказа";
+}
+
+<div class="container mt-4">
+    <h1>Создание заказа</h1>
+
+    <form method="post">
+        <div class="mb-3">
+            <label for="clientId" class="form-label">Клиент</label>
+            <select class="form-control" id="clientId" name="clientId" asp-items="Model.Clients" required>
+                <option value="">Выберите клиента</option>
+            </select>
+            <a href="/Manager/CreateClient" class="btn btn-link">Добавить клиента</a>
+        </div>
+
+        <div class="mb-3">
+            <label for="deviceType" class="form-label">Тип устройства</label>
+            <input type="text" class="form-control" id="deviceType" name="deviceType" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="deviceModel" class="form-label">Модель устройства</label>
+            <input type="text" class="form-control" id="deviceModel" name="deviceModel" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="problemDescription" class="form-label">Описание проблемы</label>
+            <textarea class="form-control" id="problemDescription" name="problemDescription" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="notes" class="form-label">Примечания</label>
+            <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+        </div>
+
+        <button type="submit" name="action" value="diagnostic" class="btn btn-primary">Создать заказ (отправить на диагностику)</button>
+        <button type="submit" name="action" value="repair" class="btn btn-success">Создать заказ (сразу на ремонт)</button>
+        <a href="/Manager/Orders" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>

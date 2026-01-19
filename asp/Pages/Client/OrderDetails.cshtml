@@ -1,0 +1,63 @@
+@page "{id:int}"
+@model asp.Pages.Client.OrderDetailsModel
+@{
+    ViewData["Title"] = $"Заказ №{Model.Order?.Id}";
+}
+
+<div class="container mt-4">
+    @if (Model.Order != null)
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Заказ №@Model.Order.Id</h1>
+            <a href="/Client/Orders" class="btn btn-secondary">← Назад к заказам</a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Информация о заказе</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Клиент:</strong> @Model.Order.Client.Name (@Model.Order.Client.Email, @Model.Order.Client.Phone)</p>
+                <p><strong>Устройство:</strong> @(Model.Order.DeviceType ?? "null") @(Model.Order.DeviceModel ?? "null")</p>
+                <p><strong>Статус:</strong> @Model.Order.Status</p>
+                <p><strong>Стоимость диагностики:</strong> @(Model.Order.PreliminaryCost.HasValue ? $"{Model.Order.PreliminaryCost:C}" : "Не указана")</p>
+                <p><strong>Общая стоимость:</strong> @(Model.Order.FinalCost.HasValue ? $"{Model.Order.FinalCost:C}" : "Не указана")</p>
+                <p><strong>Предоплата:</strong> @(Model.Order.Prepayment.HasValue ? $"{Model.Order.Prepayment:C}" : "Не внесена")</p>
+            </div>
+        </div>
+
+        @if (Model.Order.Status == "Ожидает подтверждения клиента")
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h5>Действия</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="d-inline">
+                        <button type="submit" name="action" value="agree" class="btn btn-success me-2" onclick="return confirm('Вы уверены, что хотите согласиться на ремонт?')">Согласиться на ремонт</button>
+                    </form>
+                    <form method="post" class="d-inline">
+                        <button type="submit" name="action" value="decline" class="btn btn-danger me-2" onclick="return confirm('Вы уверены, что хотите отказаться от ремонта?')">Отказаться от ремонта</button>
+                    </form>
+                    @if (Model.Order.RequiresPrepayment == true && Model.Order.PreliminaryCost.HasValue)
+                    {
+                        <form method="post" class="d-inline">
+                            <div class="input-group" style="width: 200px;">
+                                <input type="number" step="0.01" name="amount" class="form-control" placeholder="Сумма" required />
+                                <button type="submit" name="action" value="prepay" class="btn btn-warning">Внести предоплату</button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Заказ не найден</h1>
+            <a href="/Client/Orders" class="btn btn-secondary">← Назад к заказам</a>
+        </div>
+        <p>Заказ не найден.</p>
+    }
+</div>

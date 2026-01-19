@@ -1,0 +1,75 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.tmp
+*.log
+*.cache
+*.pdb
+*.exe
+*.dll
+*.nuget/
+*.nupkg
+
+# Visual Studio
+.vs/
+.vscode/
+*.sln.cache
+*.suo
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.svcmap
+
+# ASP.NET Core
+appsettings.Development.json
+wwwroot/lib/
+wwwroot/js/site.js.map
+wwwroot/css/site.css.map
+
+# Entity Framework
+*.mdf
+*.ldf
+*.db
+Migrations/
+
+# Node.js (if used)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp

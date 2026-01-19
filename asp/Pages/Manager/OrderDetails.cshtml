@@ -1,0 +1,110 @@
+@page "{id:int}"
+@model asp.Pages.Manager.OrderDetailsModel
+@{
+    ViewData["Title"] = $"Заказ №{Model.Order?.Id}";
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.Order != null)
+    {
+        <h1>Заказ №@Model.Order.Id</h1>
+
+        <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">Основное</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="repair-tab" data-bs-toggle="tab" data-bs-target="#repair" type="button" role="tab">Детали ремонта</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="orderTabsContent">
+            <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                <div class="mt-4">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Клиент</label>
+                            <p>@Model.Order.Client?.Name (@Model.Order.Client?.Email)</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="deviceType" class="form-label">Тип устройства</label>
+                            <input type="text" class="form-control" id="deviceType" name="deviceType" value="@Model.Order.Device?.Type" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="deviceModel" class="form-label">Модель устройства</label>
+                            <input type="text" class="form-control" id="deviceModel" name="deviceModel" value="@Model.Order.Device?.Model" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Статус</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="в обработке" selected="@(Model.Order.Status == "в обработке")">В обработке</option>
+                                <option value="диагностика" selected="@(Model.Order.Status == "диагностика")">Диагностика</option>
+                                <option value="ремонт" selected="@(Model.Order.Status == "ремонт")">Ремонт</option>
+                                <option value="Ожидает подтверждения клиента" selected="@(Model.Order.Status == "Ожидает подтверждения клиента")">Ожидает подтверждения клиента</option>
+                                <option value="Клиент согласился" selected="@(Model.Order.Status == "Клиент согласился")">Клиент согласился</option>
+                                <option value="Клиент отказался" selected="@(Model.Order.Status == "Клиент отказался")">Клиент отказался</option>
+                                <option value="отменён" selected="@(Model.Order.Status == "отменён")">Отменён</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="masterId" class="form-label">Мастер</label>
+                            <select class="form-control" id="masterId" name="masterId" asp-items="Model.Masters">
+                                <option value="">Не назначен</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="preliminaryCost" class="form-label">Стоимость диагностики</label>
+                            <input type="number" step="0.01" class="form-control" id="preliminaryCost" name="preliminaryCost" value="@Model.Order.PreliminaryCost" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="finalCost" class="form-label">Общая стоимость</label>
+                            <input type="number" step="0.01" class="form-control" id="finalCost" name="finalCost" value="@Model.Order.FinalCost" />
+                        </div>
+
+                        <button type="submit" name="action" value="update" class="btn btn-primary">Сохранить изменения</button>
+                        <button type="submit" name="action" value="sendCost" class="btn btn-info">Отправить стоимость клиенту</button>
+                        <button type="submit" name="action" value="recordPayment" class="btn btn-success">Записать оплату</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="repair" role="tabpanel">
+                <div class="mt-4">
+                    <h5>Использованные детали</h5>
+                    <p>Только просмотр (редактировать сможет мастер)</p>
+                    <!-- Placeholder for parts -->
+                    <p>Детали ремонта будут отображаться здесь.</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="/Manager/Orders" class="btn btn-secondary mt-3">Назад к заказам</a>
+    }
+    else
+    {
+        <p>Заказ не найден.</p>
+        <a href="/Manager/Orders" class="btn btn-secondary">Назад к заказам</a>
+    }
+</div>

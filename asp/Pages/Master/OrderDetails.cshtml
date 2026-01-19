@@ -1,0 +1,260 @@
+@page "{id:int}"
+@model asp.Pages.Master.OrderDetailsModel
+@{
+    ViewData["Title"] = $"Заказ №{@Model.Order?.Id}";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Заказ №@Model.Order?.Id</h1>
+        <a href="/Master/Orders" class="btn btn-secondary">← Назад к заказам</a>
+    </div>
+
+    <!-- Сообщения -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Order == null)
+    {
+        <div class="alert alert-danger">
+            Заказ не найден.
+        </div>
+        return;
+    }
+
+    <!-- Информация о заказе -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Информация о заказе</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Клиент:</strong> @Model.Order.Client?.Name</p>
+                    <p><strong>Телефон:</strong> @Model.Order.Client?.Phone</p>
+                    <p><strong>Email:</strong> @Model.Order.Client?.Email</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Устройство:</strong> @(Model.Order.DeviceType ?? "null") @(Model.Order.DeviceModel ?? "null")</p>
+                    <p><strong>Проблема:</strong> @Model.Order.ProblemDescription</p>
+                    <p><strong>Статус:</strong>
+                        <span class="badge bg-@(GetStatusBadgeClass(Model.Order.Status))">@Model.Order.Status</span>
+                    </p>
+                    <p><strong>Дата создания:</strong> @Model.Order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.Order.Status == "диагностика" ? "active" : "")"
+                    id="diagnosis-tab" data-bs-toggle="tab" data-bs-target="#diagnosis"
+                    type="button" role="tab" aria-controls="diagnosis" aria-selected="true">
+                Диагностика
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link @(Model.Order.Status == "ремонт" ? "active" : "")"
+                    id="repair-tab" data-bs-toggle="tab" data-bs-target="#repair"
+                    type="button" role="tab" aria-controls="repair" aria-selected="false">
+                Ремонт
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="orderTabsContent">
+        <!-- Вкладка диагностики -->
+        <div class="tab-pane fade @(Model.Order.Status == "диагностика" ? "show active" : "")"
+             id="diagnosis" role="tabpanel" aria-labelledby="diagnosis-tab">
+            <div class="card mt-3">
+                <div class="card-body">
+                    @if (Model.Order.Status == "диагностика")
+                    {
+                        <form method="post" asp-page-handler="SubmitDiagnosis">
+                            <div class="mb-3">
+                                <label for="diagnosis" class="form-label">Результаты диагностики:</label>
+                                <textarea class="form-control @(!ViewData.ModelState.IsValid && ViewData.ModelState["diagnosis"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                          id="diagnosis" name="diagnosis" rows="4"
+                                          placeholder="Опишите выявленные проблемы..." required></textarea>
+                                <div class="invalid-feedback">
+                                    @ViewData.ModelState["diagnosis"]?.Errors.FirstOrDefault()?.ErrorMessage
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="recommendedWork" class="form-label">Рекомендуемые работы:</label>
+                                <textarea class="form-control @(!ViewData.ModelState.IsValid && ViewData.ModelState["recommendedWork"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                          id="recommendedWork" name="recommendedWork" rows="3"
+                                          placeholder="Опишите необходимые работы..." required></textarea>
+                                <div class="invalid-feedback">
+                                    @ViewData.ModelState["recommendedWork"]?.Errors.FirstOrDefault()?.ErrorMessage
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="diagnosticCost" class="form-label">Стоимость диагностики:</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.01" min="0" max="100000" class="form-control @(!ViewData.ModelState.IsValid && ViewData.ModelState["diagnosticCost"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                                   id="diagnosticCost" name="diagnosticCost" required>
+                                            <span class="input-group-text">₽</span>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            @ViewData.ModelState["diagnosticCost"]?.Errors.FirstOrDefault()?.ErrorMessage
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="prepayment" class="form-label">Предоплата (необязательно):</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.01" min="0" class="form-control @(!ViewData.ModelState.IsValid && ViewData.ModelState["prepayment"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                                   id="prepayment" name="prepayment">
+                                            <span class="input-group-text">₽</span>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            @ViewData.ModelState["prepayment"]?.Errors.FirstOrDefault()?.ErrorMessage
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success">Отправить диагностику менеджеру</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <h6>Результаты диагностики:</h6>
+                        <p>@Model.Order.Diagnosis</p>
+
+                        <h6>Рекомендуемые работы:</h6>
+                        <p>@Model.Order.RecommendedWork</p>
+
+                        <h6>Стоимость диагностики:</h6>
+                        <p>@Model.Order.PreliminaryCost?.ToString("C")</p>
+
+                        @if (Model.Order.Prepayment.HasValue)
+                        {
+                            <h6>Предоплата:</h6>
+                            <p>@Model.Order.Prepayment?.ToString("C")</p>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка ремонта -->
+        <div class="tab-pane fade @(Model.Order.Status == "ремонт" ? "show active" : "")"
+             id="repair" role="tabpanel" aria-labelledby="repair-tab">
+            <div class="card mt-3">
+                <div class="card-body">
+                    @if (Model.Order.Status == "ремонт")
+                    {
+                        <!-- Добавление деталей -->
+                        <h6>Добавить деталь к ремонту:</h6>
+                        <form method="post" asp-page-handler="AddPart" class="mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select class="form-select" name="partId" required>
+                                        <option value="">Выберите деталь</option>
+                                        @foreach (var part in Model.AvailableParts)
+                                        {
+                                            <option value="@part.Id">@part.Name (@part.Price.ToString("C"))</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" min="1" class="form-control" name="quantity"
+                                           placeholder="Кол-во" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary">Добавить</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Кнопка завершения ремонта -->
+                        <form method="post" asp-page-handler="CompleteRepair" class="mb-3">
+                            <button type="submit" class="btn btn-success"
+                                    onclick="return confirm('Вы уверены, что хотите завершить ремонт?')">
+                                Завершить ремонт
+                            </button>
+                        </form>
+                    }
+
+                    <!-- Список использованных деталей -->
+                    <h6>Использованные детали:</h6>
+                    @if (Model.Order.OrderParts.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Деталь</th>
+                                        <th>Количество</th>
+                                        <th>Цена за ед.</th>
+                                        <th>Итого</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var orderPart in Model.Order.OrderParts)
+                                    {
+                                        <tr>
+                                            <td>@orderPart.Part?.Name</td>
+                                            <td>@orderPart.Quantity</td>
+                                            <td>@orderPart.UnitPrice.ToString("C")</td>
+                                            <td>@((orderPart.Quantity * orderPart.UnitPrice).ToString("C"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3">Общая стоимость деталей:</th>
+                                        <th>@Model.Order.OrderParts.Sum(op => op.Quantity * op.UnitPrice).ToString("C")</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Детали еще не добавлены.</p>
+                    }
+
+                    @if (Model.Order.Status == "ремонт" && Model.Order.OrderParts.Any())
+                    {
+                        <div class="alert alert-info mt-3">
+                            Ремонт в процессе. Детали добавлены, можно завершить ремонт.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Ожидает диагностики" => "warning",
+            "В процессе ремонта" => "info",
+            "Ремонт завершён" => "success",
+            _ => "secondary"
+        };
+    }
+}
