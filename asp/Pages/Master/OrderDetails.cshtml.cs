@@ -189,7 +189,7 @@ public class OrderDetailsModel : PageModel
             }
 
             int availableQuantity = (part.StockQuantity ?? 0) - (part.ReservedQuantity ?? 0);
-            if (availableQuantity < quantity)
+            if (availableQuantity <= 0 || availableQuantity < quantity)
             {
                 TempData["ErrorMessage"] = $"Недостаточно деталей на складе. Доступно: {availableQuantity} шт.";
                 return RedirectToPage();
