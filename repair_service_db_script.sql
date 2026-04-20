@@ -87,7 +87,8 @@ CREATE TABLE repair_service_schema.parts (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     unit_cost NUMERIC(10,2),
-    stock_quantity INTEGER DEFAULT 0
+    stock_quantity INTEGER DEFAULT 0,
+    reserved_quantity INTEGER DEFAULT 0
 );
 
 -- Создание таблицы orderparts

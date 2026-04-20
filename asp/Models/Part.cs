@@ -19,12 +19,15 @@ public class Part
     public string? Description { get; set; }
 
     [Required]
-    [Column("price")]
+    [Column("unit_cost")]
     [Range(0.01, double.MaxValue)]
     public decimal Price { get; set; }
 
-    [Column("stockquantity")]
+    [Column("stock_quantity")]
     public int? StockQuantity { get; set; }
+
+    [Column("reserved_quantity")]
+    public int? ReservedQuantity { get; set; }
 
     [NotMapped]
     public DateTime CreatedAt { get; set; } = DateTime.Now;

@@ -149,8 +149,6 @@ public class OrderDetailsModel : PageModel
 
     public async Task<IActionResult> OnPostAddPartAsync(int partId, int quantity)
     {
-        // Для демо-версии позволяем любому мастеру работать с заказами в работе
-        // Валидация входных данных
         if (partId <= 0)
         {
             TempData["ErrorMessage"] = "Выберите деталь";
@@ -176,57 +174,72 @@ public class OrderDetailsModel : PageModel
             return RedirectToPage();
         }
 
-        var part = await _context.Parts.FindAsync(partId);
-        if (part == null)
-        {
-            TempData["ErrorMessage"] = "Деталь не найдена.";
-            return RedirectToPage();
-        }
+        using var dbTransaction = await _context.Database.BeginTransactionAsync();
 
-        // Проверяем доступное количество на складе
-        if (part.StockQuantity.HasValue && part.StockQuantity.Value < quantity)
+        try
         {
-            TempData["ErrorMessage"] = $"Недостаточно деталей на складе. Доступно: {part.StockQuantity.Value} шт.";
-            return RedirectToPage();
-        }
+            var part = await _context.Parts
+                .FromSqlRaw("SELECT * FROM repair_service_schema.parts WHERE partid = {0} FOR UPDATE", partId)
+                .FirstOrDefaultAsync();
 
-        // Проверяем, не добавлена ли уже эта деталь
-        var existingOrderPart = await _context.OrderParts
-            .FirstOrDefaultAsync(op => op.OrderId == Id && op.PartId == partId);
-
-        if (existingOrderPart != null)
-        {
-            existingOrderPart.Quantity += quantity;
-        }
-        else
-        {
-            var orderPart = new OrderPart
+            if (part == null)
             {
-                OrderId = Id,
-                PartId = partId,
-                Quantity = quantity
+                TempData["ErrorMessage"] = "Деталь не найдена.";
+                return RedirectToPage();
+            }
+
+            int availableQuantity = (part.StockQuantity ?? 0) - (part.ReservedQuantity ?? 0);
+            if (availableQuantity < quantity)
+            {
+                TempData["ErrorMessage"] = $"Недостаточно деталей на складе. Доступно: {availableQuantity} шт.";
+                return RedirectToPage();
+            }
+
+            part.ReservedQuantity = (part.ReservedQuantity ?? 0) + quantity;
+
+            var existingOrderPart = await _context.OrderParts
+                .FirstOrDefaultAsync(op => op.OrderId == Id && op.PartId == partId);
+
+            if (existingOrderPart != null)
+            {
+                existingOrderPart.Quantity += quantity;
+            }
+            else
+            {
+                var orderPart = new OrderPart
+                {
+                    OrderId = Id,
+                    PartId = partId,
+                    Quantity = quantity
+                };
+                _context.OrderParts.Add(orderPart);
+            }
+
+            var activityLog = new asp.ActivityLog
+            {
+                OrderId = order.Id,
+                Action = $"Добавлена деталь: {part.Name}, количество: {quantity}, цена: {part.Price:C}",
+                Timestamp = DateTime.Now
             };
-            _context.OrderParts.Add(orderPart);
+
+            _context.ActivityLogs.Add(activityLog);
+            await _context.SaveChangesAsync();
+
+            await dbTransaction.CommitAsync();
+
+            TempData["SuccessMessage"] = $"Деталь '{part.Name}' добавлена к ремонту.";
+        }
+        catch (Exception ex)
+        {
+            await dbTransaction.RollbackAsync();
+            TempData["ErrorMessage"] = $"Ошибка при добавлении детали: {ex.Message}";
         }
 
-        // Добавляем запись в лог активности
-        var activityLog = new asp.ActivityLog
-        {
-            OrderId = order.Id,
-            Action = $"Добавлена деталь: {part.Name}, количество: {quantity}, цена: {part.Price:C}",
-            Timestamp = DateTime.Now
-        };
-
-        _context.ActivityLogs.Add(activityLog);
-        await _context.SaveChangesAsync();
-
-        TempData["SuccessMessage"] = $"Деталь '{part.Name}' добавлена к ремонту.";
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostCompleteRepairAsync()
     {
-        // Для демо-версии позволяем любому мастеру работать с заказами в работе
         var order = await _context.Orders.FindAsync(Id);
         if (order == null || order.Status != "ремонт")
         {
@@ -234,7 +247,6 @@ public class OrderDetailsModel : PageModel
             return RedirectToPage();
         }
 
-        // Проверяем допустимость перехода статуса
         var currentStatus = OrderStatusService.ParseStatus(order.Status);
         var newStatus = OrderStatusEnum.РемонтЗавершён;
 
@@ -244,27 +256,55 @@ public class OrderDetailsModel : PageModel
             return RedirectToPage();
         }
 
-        // Вычисляем итоговую стоимость
-        var partsCost = await _context.OrderParts
-            .Where(op => op.OrderId == Id)
-            .SumAsync(op => op.Quantity * op.UnitPrice);
+        using var dbTransaction = await _context.Database.BeginTransactionAsync();
 
-        order.FinalCost = (order.PreliminaryCost ?? 0) + partsCost;
-        order.Status = OrderStatusService.StatusToString(newStatus);
-        order.UpdatedAt = DateTime.Now;
-
-        // Добавляем запись в лог активности
-        var activityLog = new asp.ActivityLog
+        try
         {
-            OrderId = order.Id,
-            Action = $"Ремонт завершен. Итоговая стоимость: {order.FinalCost:C}",
-            Timestamp = DateTime.Now
-        };
+            var orderParts = await _context.OrderParts
+                .Include(op => op.Part)
+                .Where(op => op.OrderId == Id)
+                .ToListAsync();
 
-        _context.ActivityLogs.Add(activityLog);
-        await _context.SaveChangesAsync();
+            foreach (var orderPart in orderParts)
+            {
+                var part = await _context.Parts
+                    .FromSqlRaw("SELECT * FROM repair_service_schema.parts WHERE partid = {0} FOR UPDATE", orderPart.PartId)
+                    .FirstOrDefaultAsync();
 
-        TempData["SuccessMessage"] = "Ремонт успешно завершен!";
+                if (part == null) continue;
+
+                part.StockQuantity = (part.StockQuantity ?? 0) - orderPart.Quantity;
+                part.ReservedQuantity = (part.ReservedQuantity ?? 0) - orderPart.Quantity;
+            }
+
+            var partsCost = await _context.OrderParts
+                .Where(op => op.OrderId == Id)
+                .SumAsync(op => op.Quantity * op.UnitPrice);
+
+            order.FinalCost = (order.PreliminaryCost ?? 0) + partsCost;
+            order.Status = OrderStatusService.StatusToString(newStatus);
+            order.UpdatedAt = DateTime.Now;
+
+            var activityLog = new asp.ActivityLog
+            {
+                OrderId = order.Id,
+                Action = $"Ремонт завершен. Итоговая стоимость: {order.FinalCost:C}",
+                Timestamp = DateTime.Now
+            };
+
+            _context.ActivityLogs.Add(activityLog);
+            await _context.SaveChangesAsync();
+
+            await dbTransaction.CommitAsync();
+
+            TempData["SuccessMessage"] = "Ремонт успешно завершен!";
+        }
+        catch (Exception ex)
+        {
+            await dbTransaction.RollbackAsync();
+            TempData["ErrorMessage"] = $"Ошибка при завершении ремонта: {ex.Message}";
+        }
+
         return RedirectToPage();
     }
 }
