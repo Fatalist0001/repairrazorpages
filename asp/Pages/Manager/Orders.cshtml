@@ -12,6 +12,11 @@
         <a href="/Manager/Clients" class="btn btn-secondary">Управление клиентами</a>
     </div>
 
+    @if (TempData["TotalCost"] != null)
+    {
+        <div class="alert alert-success">@TempData["TotalCost"]</div>
+    }
+
     <form method="get" class="mb-4">
         <div class="row">
             <div class="col-md-3">
@@ -61,6 +66,10 @@
                         <td>@order.CreatedAt.ToShortDateString()</td>
                         <td>
                             <a href="/Manager/OrderDetails/@order.Id" class="btn btn-sm btn-info">Открыть</a>
+                            <form method="post" asp-page-handler="CalculateTotal" style="display:inline">
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Рассчитать стоимость</button>
+                            </form>
                         </td>
                     </tr>
                 }

@@ -86,7 +86,32 @@
                         <button type="submit" name="action" value="update" class="btn btn-primary">Сохранить изменения</button>
                         <button type="submit" name="action" value="sendCost" class="btn btn-info">Отправить стоимость клиенту</button>
                         <button type="submit" name="action" value="recordPayment" class="btn btn-success">Записать оплату</button>
+                        <button type="submit" name="action" value="showLog" class="btn btn-outline-secondary">Показать историю активности</button>
                     </form>
+
+                    @if (Model.ActivityLogItems.Any())
+                    {
+                        <h5 class="mt-4">История активности</h5>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Время</th>
+                                    <th>Сотрудник</th>
+                                    <th>Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var log in Model.ActivityLogItems)
+                                {
+                                    <tr>
+                                        <td>@log.Timestamp</td>
+                                        <td>@log.EmployeeName</td>
+                                        <td>@log.Action</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
                 </div>
             </div>
 

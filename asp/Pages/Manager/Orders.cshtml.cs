@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,5 +39,19 @@ public class OrdersModel : PageModel
         }
 
         Orders = await query.ToListAsync();
+    }
+
+    public async Task<IActionResult> OnPostCalculateTotal(int orderId)
+    {
+        var total = await _context.Database
+            .SqlQueryRaw<decimal>($"SELECT repair_service_schema.calculate_order_total({orderId})")
+            .ToListAsync();
+
+        if (total.Any())
+        {
+            TempData["TotalCost"] = $"Полная стоимость заказа #{orderId}: {total.First():C}";
+        }
+
+        return RedirectToPage();
     }
 }

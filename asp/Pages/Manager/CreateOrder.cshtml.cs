@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace asp.Pages.Manager;
 
@@ -14,6 +15,11 @@ public class CreateOrderModel : PageModel
     }
 
     public SelectList Clients { get; set; }
+    public int? RecommendedMasterId { get; set; }
+    public string? DeviceType { get; set; }
+    public string? DeviceModel { get; set; }
+    public string? ProblemDescription { get; set; }
+    public string? Notes { get; set; }
 
     public void OnGet()
     {
@@ -22,13 +28,32 @@ public class CreateOrderModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(int clientId, string deviceType, string deviceModel, string problemDescription, string notes, string action)
     {
+        DeviceType = deviceType;
+        DeviceModel = deviceModel;
+        ProblemDescription = problemDescription;
+        Notes = notes;
+
+        if (action == "findMaster")
+        {
+            var result = await _context.Database
+                .SqlQueryRaw<int>("SELECT repair_service_schema.get_least_loaded_employee()")
+                .ToListAsync();
+
+            if (result.Any())
+            {
+                RecommendedMasterId = result.First();
+            }
+
+            Clients = new SelectList(_context.Clients, "Id", "Name");
+            return Page();
+        }
+
         if (!ModelState.IsValid)
         {
             Clients = new SelectList(_context.Clients, "Id", "Name");
             return Page();
         }
 
-        // Создаем устройство
         var device = new Device
         {
             ClientId = clientId,
@@ -40,7 +65,6 @@ public class CreateOrderModel : PageModel
         _context.Devices.Add(device);
         await _context.SaveChangesAsync();
 
-        // Создаем заказ с ссылкой на устройство
         var order = new Order
         {
             ClientId = clientId,
