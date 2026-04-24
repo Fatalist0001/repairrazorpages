@@ -176,6 +176,10 @@ INSERT INTO repair_service_schema.activitylog (orderid, empid, timestamp, action
 (4, NULL, '2024-06-08 10:30:00', 'Принята предоплата: 5000.00'),
 (4, NULL, '2024-06-08 18:00:00', 'Статус изменён на: ремонт');
 
+-- ==================== ИСПРАВЛЕНИЯ ====================
+
+ALTER TABLE repair_service_schema.activitylog ALTER COLUMN orderid DROP NOT NULL;
+
 -- ==================== ТРАНЗАКЦИИ ====================
 
 BEGIN;
