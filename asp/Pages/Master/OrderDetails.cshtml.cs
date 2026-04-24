@@ -174,7 +174,7 @@ public class OrderDetailsModel : PageModel
             return RedirectToPage();
         }
 
-        using var dbTransaction = await _context.Database.BeginTransactionAsync();
+        using var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
         try
         {
@@ -256,7 +256,7 @@ public class OrderDetailsModel : PageModel
             return RedirectToPage();
         }
 
-        using var dbTransaction = await _context.Database.BeginTransactionAsync();
+        using var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
         try
         {
