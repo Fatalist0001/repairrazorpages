@@ -11,28 +11,22 @@ obj/
 *.dll
 *.nuget/
 *.nupkg
+*.trx
 
 # Visual Studio
 .vs/
 .vscode/
 *.sln.cache
-*.suo
-*.user
 *.aps
 *.pch
 *.vspscc
 *_i.c
 *_p.c
 *.ncb
-*.suo
 *.tlb
 *.tlh
-*.tmp
 *.tmp_proj
-*.log
-*.vspscc
-*.vssscc
-.builds
+*.builds
 *.pidb
 *.svclog
 *.svcmap
@@ -73,3 +67,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# .NET Core
+*.log
+*.dmp
+*.txt~*
+launchSettings.json
